@@ -1,31 +1,117 @@
-# api
+# Core API
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
+Backend API for a Laptop EMI & Device Management Platform.
 
-Here are some useful links to get you started:
- * [Ktor Documentation](https://ktor.io/docs/home.html)
- * [Ktor GitHub page](https://github.com/ktorio/ktor)
- * [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). [Request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up).
+## Project Overview
 
+Core API is the central backend system connecting:
 
-## Features
-Here's a list of features included in this project:
+- Super Admin Dashboard
+- Shop Admin Dashboard
+- Laptop / Device Management
+- Windows Agent
+- Customer Management
+- EMI Management
+- Payment Management
+- License Management
+- Subscription Management
 
-| Name | Description |
-|------|-------------|
+The backend is designed as a multi-tenant REST API.
 
-## Building & Running
-To build or run the project, use one of the following tasks:
+---
 
+# Business Model
 
-| Task | Description |
-|------|-------------|
-| `./gradlew test`    | Run the tests     |
-| `./gradlew build`   | Build the project |
-| `./gradlew run`     | Run the server    |
-
-If the server starts successfully, you'll see the following output:
+```text
+                    CORE API
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+        ▼              ▼              ▼
+   Super Admin     Shop Admin    Windows Agent
+        │              │              │
+        │              ▼              ▼
+        │          Customers       Laptops
+        │              │              │
+        │              ▼              │
+        │             EMI             │
+        │              │              │
+        │              ▼              │
+        │           Payments          │
+        │                             │
+        └─────────────┬───────────────┘
+                      ▼
+                 PostgreSQL
 ```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
+
+---
+
+## Technology Stack
+
+- Kotlin
+- Ktor
+- Gradle
+- PostgreSQL 18
+- Exposed ORM
+- Flyway
+- JWT Authentication
+- Valkey
+- REST API
+
+---
+
+# Project Setup
+
+## 1. Requirements
+
+Make sure the following are installed:
+
+- JDK 21+
+- PostgreSQL 18
+- pgAdmin 4
+- VS Code
+- Git
+
+The project uses the Kotlin JVM toolchain:
+
+```kotlin
+kotlin {
+    jvmToolchain(21)
+}
 ```
+
+## 2. Database Configuration & Migrations (Step 1)
+
+The project connects to PostgreSQL using HikariCP for connection pooling and Exposed as the ORM. Flyway is used to manage database migrations automatically on application startup.
+
+### Setting up the Database
+
+1. Create a `.env` file in the root directory based on the `.env.example` (or use the one already provided):
+   ```env
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=core_api
+   DB_USER=postgres
+   DB_PASSWORD=your_password
+   ```
+
+2. Make sure your local PostgreSQL server is running and the database `core_api` exists.
+
+3. The initial schema migration is located at `src/main/resources/db/migration/V1__create_initial_schema.sql`, which creates the base `tenants` and `users` tables.
+
+---
+
+## 3. Authentication (Step 2)
+
+The API uses JWT (JSON Web Tokens) for authenticating users. 
+
+### Configuration
+JWT secrets and issuer details can be defined in your `.env` file:
+```env
+JWT_SECRET=your_super_secret_key
+JWT_ISSUER=http://localhost:8080
+JWT_AUDIENCE=http://localhost:8080/api
+```
+
+- **Token Generation**: Handled by the `JwtConfig.generateToken` utility. Tokens encode the `userId`, `role`, and `tenantId`.
+- **Protected Routes**: Wrap any routes that require authentication in an `authenticate("auth-jwt") { ... }` block in your routing configuration.
