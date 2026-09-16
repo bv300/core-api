@@ -8,8 +8,14 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
+import com.core.api.routes.authRoutes
+import com.core.api.services.AuthService
+
 fun Application.configureRouting() {
+    val authService = AuthService()
+    
     routing {
+        authRoutes(authService)
 
         get("/") {
             call.respond(

@@ -33,6 +33,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:13.4.0")
     implementation("org.flywaydb:flyway-database-postgresql:13.4.0")
 
+    implementation("org.mindrot:jbcrypt:0.4")
     implementation(libs.logback.classic)
 
     testImplementation(kotlin("test"))
